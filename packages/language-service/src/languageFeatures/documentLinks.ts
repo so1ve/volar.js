@@ -49,6 +49,7 @@ export function register(context: ServiceContext) {
 				if (range) {
 					return {
 						...link,
+						target: map.sourceFileDocument.uri,
 						range,
 					};
 				}
