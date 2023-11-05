@@ -5,6 +5,7 @@ import {
 	type ServiceEnvironment,
 	type SharedModules,
 	type LanguageService,
+	createProject,
 } from '@volar/language-service';
 import type * as monaco from 'monaco-editor-core';
 import type * as ts from 'typescript/lib/tsserverlibrary';
@@ -89,7 +90,7 @@ export function createLanguageService<T = {}>(
 		modules,
 		env,
 		config,
-		host,
+		createProject(host, Object.values(config.languages ?? {})),
 	);
 
 	class InnocentRabbit { };

@@ -84,9 +84,9 @@ export function register(
 				});
 			}
 			// global virtual files
-			for (const fileName of ls.context.project.host.getScriptFileNames()) {
+			for (const fileName of ls.context.project.resolvedHost.getScriptFileNames()) {
 				if (!fs.existsSync(fileName)) {
-					const snapshot = ls.context.project.host.getScriptSnapshot(fileName);
+					const snapshot = ls.context.project.resolvedHost.getScriptSnapshot(fileName);
 					if (snapshot) {
 						fs.writeFile(fileName, snapshot.getText(0, snapshot.getLength()), () => { });
 					}

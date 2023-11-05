@@ -1,4 +1,4 @@
-import { FileSystem, LanguageService, ServiceEnvironment, ProjectHost, createLanguageService } from '@volar/language-service';
+import { FileSystem, LanguageService, ServiceEnvironment, ProjectHost, createLanguageService, createProject } from '@volar/language-service';
 import * as path from 'path-browserify';
 import type * as ts from 'typescript/lib/tsserverlibrary';
 import * as vscode from 'vscode-languageserver';
@@ -46,7 +46,7 @@ export async function createTypeScriptProject(context: ProjectContext) {
 
 	let parsedCommandLine: ts.ParsedCommandLine;
 
-	const project = await createProject(
+	const project = await createServerProject(
 		async () => {
 			parsedCommandLine = await createParsedCommandLine(
 				context.workspaces.ts,
@@ -76,7 +76,7 @@ export async function createTypeScriptProject(context: ProjectContext) {
 	};
 }
 
-async function createProject(
+async function createServerProject(
 	getRootFiles: () => Promise<string[]>,
 	env: ServiceEnvironment,
 	context: ProjectContext,
@@ -170,7 +170,7 @@ async function createProject(
 				{ typescript: context.workspaces.ts },
 				env,
 				config,
-				projectHost,
+				createProject(projectHost, Object.values(config.languages ?? {})),
 			);
 		}
 		return languageService;
