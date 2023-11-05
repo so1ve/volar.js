@@ -1,7 +1,6 @@
 import type { Language, createProject } from '@volar/language-core';
 import type * as vscode from 'vscode-languageserver-protocol';
 import type { TextDocument } from 'vscode-languageserver-textdocument';
-import type { URI } from 'vscode-uri';
 import type { DocumentsAndSourceMaps } from './documents';
 
 export type * from 'vscode-languageserver-protocol';
@@ -13,8 +12,6 @@ export interface SharedModules {
 export interface ServiceEnvironment {
 
 	locale?: string;
-	workspaceUri: URI;
-	rootUri: URI;
 	clientCapabilities?: vscode.ClientCapabilities;
 	getConfiguration?<T>(section: string, scopeUri?: string): Promise<T | undefined>;
 	onDidChangeConfiguration?(cb: () => void): vscode.Disposable;

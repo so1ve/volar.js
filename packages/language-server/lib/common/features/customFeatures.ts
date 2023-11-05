@@ -72,7 +72,7 @@ export function register(
 
 		const ls = project.getLanguageServiceDontCreate();
 		if (ls) {
-			const rootPath = ls.context.env.uriToFileName(ls.context.env.rootUri.toString());
+			const rootPath = ls.context.project.resolvedHost.rootPath;
 			for (const { root } of ls.context.project.virtualFiles.allSources()) {
 				forEachEmbeddedFile(root, virtualFile => {
 					if (virtualFile.kind === FileKind.TypeScriptHostFile) {

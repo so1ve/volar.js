@@ -1,6 +1,5 @@
 import { Config, FormattingOptions, TypeScriptProjectHost, createLanguageService, createProject } from '@volar/language-service';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { URI } from 'vscode-uri';
 import { asPosix, defaultCompilerOptions, fileNameToUri, fs, getConfiguration, uriToFileName } from './utils';
 import * as ts from 'typescript';
 
@@ -18,8 +17,6 @@ export function createFormatter(
 	const service = createLanguageService(
 		{ typescript: ts as any },
 		{
-			workspaceUri: URI.file('/'),
-			rootUri: URI.file('/'),
 			uriToFileName: uri => {
 				if (uri.startsWith(dummyScriptUri))
 					return uri.replace(dummyScriptUri, fakeScriptFileName);

@@ -1,7 +1,6 @@
 import { CodeActionTriggerKind, Config, Diagnostic, DiagnosticSeverity, ProjectHost, createLanguageService, createProject, mergeWorkspaceEdits } from '@volar/language-service';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { asPosix, fileNameToUri, fs, getConfiguration, uriToFileName } from './utils';
-import { URI } from 'vscode-uri';
 import * as ts from 'typescript';
 
 export function createLinter(config: Config, projectHost: ProjectHost) {
@@ -13,8 +12,6 @@ export function createLinter(config: Config, projectHost: ProjectHost) {
 		{
 			uriToFileName,
 			fileNameToUri,
-			workspaceUri: URI.parse(fileNameToUri(projectHost.workspacePath)),
-			rootUri: URI.parse(fileNameToUri(projectHost.rootPath)),
 			getConfiguration: section => getConfiguration(settings, section),
 			fs,
 			console,

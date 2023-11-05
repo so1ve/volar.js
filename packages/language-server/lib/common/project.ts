@@ -28,8 +28,6 @@ export async function createTypeScriptProject(context: ProjectContext) {
 		fs,
 		console: context.server.runtimeEnv.console,
 		locale: context.workspaces.initParams.locale,
-		workspaceUri: context.project.workspaceUri,
-		rootUri: context.project.rootUri,
 		clientCapabilities: context.workspaces.initParams.capabilities,
 		getConfiguration: context.server.configurationHost?.getConfiguration,
 		onDidChangeConfiguration: context.server.configurationHost?.onDidChangeConfiguration,
@@ -52,6 +50,7 @@ export async function createTypeScriptProject(context: ProjectContext) {
 				context.workspaces.ts,
 				env,
 				uriToFileName(context.project.rootUri.toString()),
+				uriToFileName(context.project.workspaceUri.toString()),
 				context.project.tsConfig,
 				context.workspaces.plugins,
 				existingOptions,
@@ -237,6 +236,7 @@ async function createParsedCommandLine(
 	ts: typeof import('typescript/lib/tsserverlibrary') | undefined,
 	env: ServiceEnvironment,
 	rootPath: string,
+	workspacePath: string,
 	tsConfig: string | ts.CompilerOptions,
 	plugins: ReturnType<LanguageServerPlugin>[],
 	existingOptions: ts.CompilerOptions | undefined,
@@ -246,7 +246,7 @@ async function createParsedCommandLine(
 		const sys = createSys(ts, {
 			...env,
 			onDidChangeWatchedFiles: undefined,
-		});
+		}, workspacePath);
 		let content: ts.ParsedCommandLine | undefined;
 		let sysVersion: number | undefined;
 		let newSysVersion = await sys.sync();
