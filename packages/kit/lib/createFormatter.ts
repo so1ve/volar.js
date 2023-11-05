@@ -1,14 +1,13 @@
-import { Config, FormattingOptions, TypeScriptProjectHost, createLanguageService } from '@volar/language-service';
+import { Config, FormattingOptions, TypeScriptProjectHost, createLanguageService, createProject } from '@volar/language-service';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
 import { asPosix, defaultCompilerOptions, fileNameToUri, fs, getConfiguration, uriToFileName } from './utils';
+import * as ts from 'typescript';
 
 export function createFormatter(
 	config: Config,
 	compilerOptions = defaultCompilerOptions
 ) {
-
-	const ts = require('typescript') as typeof import('typescript/lib/tsserverlibrary');
 
 	let settings = {} as any;
 	let dummyScriptUri = 'file:///dummy.txt';
@@ -17,7 +16,7 @@ export function createFormatter(
 	let fakeScriptLanguageId: string | undefined;
 
 	const service = createLanguageService(
-		{ typescript: ts },
+		{ typescript: ts as any },
 		{
 			workspaceUri: URI.file('/'),
 			rootUri: URI.file('/'),
@@ -36,7 +35,7 @@ export function createFormatter(
 			console,
 		},
 		config,
-		createProjectHost(),
+		createProject(createSimpleProjectHost(), Object.values(config.languages ?? {})),
 	);
 
 	return {
@@ -75,7 +74,7 @@ export function createFormatter(
 		return content;
 	}
 
-	function createProjectHost() {
+	function createSimpleProjectHost() {
 		let projectVersion = 0;
 		const host: TypeScriptProjectHost = {
 			workspacePath: '/',

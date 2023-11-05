@@ -9,7 +9,7 @@ import { watch } from 'chokidar';
 import * as kit from '@volar/kit';
 
 const tsconfig = getTsconfig();
-const project = kit.createProject(tsconfig, [{ extension: 'foo', isMixedContent: true, scriptKind: 7 }]);
+const projectHost = kit.createProjectHost(tsconfig, [{ extension: 'foo', isMixedContent: true, scriptKind: 7 }]);
 const config: kit.Config = {
     languages: {
         // ...
@@ -18,7 +18,7 @@ const config: kit.Config = {
         // ...
     },
 };
-const linter = kit.createLinter(config, project.languageServiceHost);
+const linter = kit.createLinter(config, projectHost);
 
 let req = 0;
 
@@ -26,15 +26,15 @@ update();
 
 createWatcher(path.dirname(tsconfig), ['ts', 'js', 'foo'])
     .on('add', (fileName) => {
-        project.fileCreated(fileName);
+        projectHost.fileCreated(fileName);
         update();
     })
     .on('unlink', (fileName) => {
-        project.fileDeleted(fileName);
+        projectHost.fileDeleted(fileName);
         update();
     })
     .on('change', (fileName) => {
-        project.fileUpdated(fileName);
+        projectHost.fileUpdated(fileName);
         update();
     });
 
@@ -94,5 +94,5 @@ const fileNames = [
 	path.resolve(rootPath, './src/b.js'),
 	path.resolve(rootPath, './src/c.foo'),
 ];
-const project = kit.createInferredProject(rootPath, fileNames);
+const projectHost = kit.createInferredProjectHost(rootPath, () => fileNames);
 ```

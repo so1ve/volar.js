@@ -1,14 +1,21 @@
 import type { TypeScriptProjectHost } from '@volar/language-service';
 import * as path from 'typesafe-path/posix';
-import type * as ts from 'typescript/lib/tsserverlibrary';
+import * as ts from 'typescript';
 import { asPosix, defaultCompilerOptions } from './utils';
 
-export function createInferredProject(
+export interface KitProjectHost extends TypeScriptProjectHost {
+	fileUpdated(fileName: string): void;
+	fileDeleted(fileName: string): void;
+	fileCreated(fileName: string): void;
+	reload(): void;
+}
+
+export function createInferredProjectHost(
 	rootPath: string,
 	getScriptFileNames: () => string[],
 	compilerOptions = defaultCompilerOptions
 ) {
-	return createProjectBase(
+	return createProjectHostBase(
 		rootPath,
 		() => ({
 			options: compilerOptions,
@@ -17,14 +24,13 @@ export function createInferredProject(
 	);
 }
 
-export function createProject(
+export function createProjectHost(
 	sourceTsconfigPath: string,
 	extraFileExtensions: ts.FileExtensionInfo[] = [],
 	existingOptions?: ts.CompilerOptions
 ) {
-	const ts = require('typescript') as typeof import('typescript/lib/tsserverlibrary');
 	const tsconfigPath = asPosix(sourceTsconfigPath);
-	return createProjectBase(
+	return createProjectHostBase(
 		path.dirname(tsconfigPath),
 		() => {
 			const parsed = ts.parseJsonSourceFileConfigFileContent(
@@ -42,10 +48,14 @@ export function createProject(
 	);
 }
 
-function createProjectBase(rootPath: string, createParsedCommandLine: () => Pick<ts.ParsedCommandLine, 'options' | 'fileNames'>) {
+function createProjectHostBase(rootPath: string, createParsedCommandLine: () => Pick<ts.ParsedCommandLine, 'options' | 'fileNames'>): KitProjectHost {
 
-	const ts = require('typescript') as typeof import('typescript/lib/tsserverlibrary');
-	const languageHost: TypeScriptProjectHost = {
+	let scriptSnapshotsCache: Map<string, ts.IScriptSnapshot | undefined> = new Map();
+	let parsedCommandLine = createParsedCommandLine();
+	let projectVersion = 0;
+	let shouldCheckRootFiles = false;
+
+	return {
 		workspacePath: rootPath,
 		rootPath: rootPath,
 		getCompilationSettings: () => {
@@ -71,15 +81,6 @@ function createProjectBase(rootPath: string, createParsedCommandLine: () => Pick
 			}
 			return scriptSnapshotsCache.get(fileName);
 		},
-	};
-
-	let scriptSnapshotsCache: Map<string, ts.IScriptSnapshot | undefined> = new Map();
-	let parsedCommandLine = createParsedCommandLine();
-	let projectVersion = 0;
-	let shouldCheckRootFiles = false;
-
-	return {
-		languageHost,
 		fileUpdated(fileName: string) {
 			fileName = asPosix(fileName);
 			if (scriptSnapshotsCache.has(fileName)) {
@@ -112,9 +113,22 @@ function createProjectBase(rootPath: string, createParsedCommandLine: () => Pick
 		shouldCheckRootFiles = false;
 
 		const newParsedCommandLine = createParsedCommandLine();
-		if (newParsedCommandLine.fileNames.length !== parsedCommandLine.fileNames.length) {
+		if (!arrayItemsEqual(newParsedCommandLine.fileNames, parsedCommandLine.fileNames)) {
 			parsedCommandLine.fileNames = newParsedCommandLine.fileNames;
 			projectVersion++;
 		}
 	}
+}
+
+function arrayItemsEqual(a: string[], b: string[]) {
+	if (a.length !== b.length) {
+		return false;
+	}
+	const set = new Set(a);
+	for (const file of b) {
+		if (!set.has(file)) {
+			return false;
+		}
+	}
+	return true;
 }

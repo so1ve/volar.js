@@ -1,16 +1,15 @@
-import { CodeActionTriggerKind, Config, Diagnostic, DiagnosticSeverity, ProjectHost, createLanguageService, mergeWorkspaceEdits } from '@volar/language-service';
-import type * as ts from 'typescript/lib/tsserverlibrary';
+import { CodeActionTriggerKind, Config, Diagnostic, DiagnosticSeverity, ProjectHost, createLanguageService, createProject, mergeWorkspaceEdits } from '@volar/language-service';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { asPosix, fileNameToUri, fs, getConfiguration, uriToFileName } from './utils';
 import { URI } from 'vscode-uri';
+import * as ts from 'typescript';
 
 export function createLinter(config: Config, projectHost: ProjectHost) {
 
 	let settings = {} as any;
 
-	const ts = require('typescript') as typeof import('typescript/lib/tsserverlibrary');
 	const service = createLanguageService(
-		{ typescript: ts },
+		{ typescript: ts as any },
 		{
 			uriToFileName,
 			fileNameToUri,
@@ -21,14 +20,13 @@ export function createLinter(config: Config, projectHost: ProjectHost) {
 			console,
 		},
 		config,
-		projectHost,
+		createProject(projectHost, Object.values(config.languages ?? {})),
 	);
 
 	return {
 		check,
 		fixErrors,
 		printErrors,
-		logErrors,
 		get settings() {
 			return settings;
 		},
@@ -89,13 +87,6 @@ export function createLinter(config: Config, projectHost: ProjectHost) {
 			text = text.replace(`TS${diagnostic.code}`, (diagnostic.source ?? '') + (diagnostic.code ? `(${diagnostic.code})` : ''));
 		}
 		return text;
-	}
-
-	/**
-	 * @deprecated please use `printErrors()` instead of
-	 */
-	function logErrors(fileName: string, diagnostics: Diagnostic[], rootPath = process.cwd()) {
-		console.log(printErrors(fileName, diagnostics, rootPath));
 	}
 
 	function formatErrors(fileName: string, diagnostics: Diagnostic[], rootPath: string) {
