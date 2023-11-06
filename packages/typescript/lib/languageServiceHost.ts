@@ -1,4 +1,4 @@
-import type { FileKind, TypeScriptProjectHost, VirtualFile, VirtualFiles } from '@volar/language-core';
+import type { FileKind, createProject, TypeScriptProjectHost, VirtualFile } from '@volar/language-core';
 import type * as ts from 'typescript/lib/tsserverlibrary';
 import * as path from 'path-browserify';
 import { matchFiles } from './typescript/utilities';
@@ -6,13 +6,18 @@ import { matchFiles } from './typescript/utilities';
 const fileVersions = new Map<string, { lastVersion: number; snapshotVersions: WeakMap<ts.IScriptSnapshot, number>; }>();
 
 export function createLanguageServiceHost(
-	projectHost: TypeScriptProjectHost,
-	virtualFiles: VirtualFiles,
+	{ resolvedHost, virtualFiles }: ReturnType<typeof createProject>,
 	ts: typeof import('typescript/lib/tsserverlibrary'),
 	sys: ts.System & {
 		version?: number;
 	},
 ) {
+
+	if (!('getCompilationSettings' in resolvedHost)) {
+		throw new Error('Not a TypeScript Project');
+	}
+
+	const projectHost = resolvedHost as TypeScriptProjectHost;
 
 	let lastProjectVersion: number | string | undefined;
 	let tsProjectVersion = 0;
